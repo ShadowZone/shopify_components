@@ -1,8 +1,3 @@
-{% comment %}
-  Swiper CSS und JS laden. 
-  HINWEIS: Wenn dein Theme Swiper bereits nutzt, kannst du diese Zeilen entfernen, 
-  um doppeltes Laden zu vermeiden.
-{% endcomment %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js" defer></script>
 
@@ -12,34 +7,37 @@
     padding-top: {{ section.settings.padding_top }}px;
     padding-bottom: {{ section.settings.padding_bottom }}px;
     background-color: {{ section.settings.bg_color }};
-    overflow: hidden; /* Wichtig, damit keine Scrollbalken entstehen */
+    overflow: hidden;
   }
 
   .swiper-container-{{ section.id }} {
     width: 100%;
-    padding-bottom: 40px; /* Platz für Pagination oder Schatten */
+    padding-bottom: 40px;
   }
 
-  /* Slide Styling */
+  /* Slide Styling (Container) */
   .swiper-slide {
-    /* Wichtig für den "Peek"-Effekt (Teil des nächsten Elements sichtbar) */
     width: 70%; 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    opacity: 0.6; /* Inaktive Slides etwas ausblenden */
-    transform: scale(0.85); /* Inaktive Slides kleiner */
-    transition: all 0.4s ease; /* Weicher Übergang */
-    user-select: none; /* Verhindert Textauswahl beim Wischen */
-    -webkit-user-drag: none; /* Verhindert das Ziehen von Bildern/Links */
-    -webkit-touch-callout: none; /* Verhindert das Kontextmenü bei langem Drücken */
-    cursor: grab; /* Erhält den visuellen Hinweis */
-    /* iOS reagiert besser, wenn der Standard-Tap-Effekt deaktiviert ist */
+    opacity: 0.6;
+    transition: all 0.4s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    cursor: grab;
     -webkit-tap-highlight-color: transparent; 
   }
-  
-  /* Media Query für Desktop: Dort vielleicht etwas schmaler, damit mehr sichtbar ist */
+   
+  /* Skalierung des Inhalts (Link) für inaktive Slides */
+  .swiper-slide .slide-content-link {
+    transform: scale(0.9);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  /* Media Query für Desktop */
   @media(min-width: 768px) {
     .swiper-slide {
       width: 40%;
@@ -49,9 +47,15 @@
   /* Das AKTIVE (zentrierte) Element */
   .swiper-slide-active {
     opacity: 1;
-    transform: scale(1.05); /* Aktives Slide leicht vergrößern */
     z-index: 2;
   }
+  
+  /* Skalierung des Inhalts (Link) des aktiven Slides */
+  .swiper-slide-active .slide-content-link {
+    transform: scale(1.0);
+    opacity: 1;
+  }
+  
 
   /* Inhalt Wrapper (Link) */
   .slide-content-link {
@@ -59,15 +63,14 @@
     color: inherit;
     display: block;
     width: 100%;
-    border-radius: 12px;
+    border-radius: {{ section.settings.border_radius }}px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   }
 
   /* Bild Styling */
   .slide-image {
     width: 100%;
-    height: 350px; /* Feste Höhe für Einheitlichkeit */
+    height: 350px;
     object-fit: cover;
     display: block;
   }
@@ -76,10 +79,11 @@
   .slide-caption {
     text-align: center;
     padding: 15px 10px;
-    background: #fff;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    background: {{ section.settings.caption_bg_color }};
+    color: {{ section.settings.caption_text_color }};
+    font-family: {{ section.settings.caption_font_family }};
   }
 </style>
 
@@ -129,10 +133,10 @@
       effect: 'slide',
       grabCursor: true,
       centeredSlides: true,
-      slidesPerView: 'auto', // Automatische Breite basierend auf CSS
-      spaceBetween: 20,      // Abstand zwischen Slides
-      loop: false,           // **GEÄNDERT: Kein endloses Wischen mehr**
-      speed: 600,            // Animationsgeschwindigkeit
+      slidesPerView: 'auto',
+      spaceBetween: 20,
+      loop: false,
+      speed: 600,
       
       pagination: {
         el: '.swiper-pagination',
@@ -153,15 +157,23 @@
   "name": "Swiper Highlight Slider",
   "settings": [
     {
-      "type": "checkbox",
-      "id": "pagination",
-      "label": "Pagination",
-      "default": true
+      "type": "header",
+      "content": "Allgemeine Einstellungen"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "Abgerundete Ecken der Slides",
+      "default": 12
     },
     {
       "type": "color",
       "id": "bg_color",
-      "label": "Hintergrundfarbe",
+      "label": "Hintergrundfarbe Sektion",
       "default": "#f4f4f4"
     },
     {
@@ -183,6 +195,44 @@
       "unit": "px",
       "label": "Abstand unten",
       "default": 40
+    },
+    {
+      "type": "header",
+      "content": "Pagination"
+    },
+    {
+      "type": "checkbox",
+      "id": "pagination",
+      "label": "Pagination anzeigen",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Caption (Titel) Einstellungen"
+    },
+    {
+      "type": "select",
+      "id": "caption_font_family",
+      "label": "Schriftart Caption",
+      "default": "Helvetica, Arial, sans-serif",
+      "options": [
+        { "value": "Helvetica, Arial, sans-serif", "label": "Standard (Helvetica/Arial)" },
+        { "value": "Georgia, serif", "label": "Serif (Georgia)" },
+        { "value": "Verdana, Geneva, sans-serif", "label": "Sans-Serif (Verdana)" },
+        { "value": "monospace", "label": "Monospace" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "caption_text_color",
+      "label": "Schriftfarbe Caption",
+      "default": "#333333"
+    },
+    {
+      "type": "color",
+      "id": "caption_bg_color",
+      "label": "Hintergrundfarbe Caption (für Transparent: #00000000)",
+      "default": "#ffffff"
     }
   ],
   "blocks": [
