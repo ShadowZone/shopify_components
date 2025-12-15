@@ -28,6 +28,16 @@
     border: none;
   }
 
+  .product-card-expandable__toggle-bar::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 42px;
+  }
+
   .product-card-expandable__content {
     padding: 20px;
     background: #fff;
@@ -111,6 +121,17 @@
     border: none;
     padding: 0;
     margin: 10px auto 0;
+    position: relative;
+  }
+
+  .product-card-expandable__close-bar::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100vw;
+    height: 42px;
   }
 
   .product-card-expandable__overlay-content {
