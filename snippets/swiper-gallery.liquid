@@ -1,0 +1,223 @@
+{% comment %}
+  Swiper Gallery Snippet
+  Kann als Section oder als Block verwendet werden
+  
+  Parameter:
+  - context: 'section' oder 'block'
+  - settings: Das Settings-Objekt (section.settings oder block.settings)
+  - blocks: Die Blocks (section.blocks oder parent_section.blocks gefiltert nach block.id)
+  - unique_id: Eindeutige ID für CSS/JS Selektoren
+{% endcomment %}
+
+{{ 'swiper-bundle.min.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'swiper-bundle.min.js' | asset_url }}" defer></script>
+
+<style>
+  /* Grundlegendes Layout */
+  .swiper-gallery-wrapper-{{ unique_id }} {
+    {% if context == 'section' %}
+      padding-top: {{ settings.padding_top }}px;
+      padding-bottom: {{ settings.padding_bottom }}px;
+      background-color: {{ settings.bg_color }};
+    {% endif %}
+    overflow: hidden;
+  }
+
+  .swiper-container-{{ unique_id }} {
+    width: 100%;
+    padding-bottom: 40px;
+  }
+
+  /* Slide Styling (Container) */
+  .swiper-container-{{ unique_id }} .swiper-slide {
+    width: 70%; 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.6;
+    transition: all 0.4s ease;
+    user-select: none;
+    -webkit-user-drag: none;
+    -webkit-touch-callout: none;
+    cursor: grab;
+    -webkit-tap-highlight-color: transparent; 
+  }
+   
+  /* Skalierung des Inhalts (Link) für inaktive Slides */
+  .swiper-container-{{ unique_id }} .swiper-slide .slide-content-link {
+    transform: scale(0.9);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+  }
+
+  /* Media Query für Desktop */
+  @media(min-width: 768px) {
+    .swiper-container-{{ unique_id }} .swiper-slide {
+      width: 40%;
+    }
+  }
+
+  /* Das AKTIVE (zentrierte) Element */
+  .swiper-container-{{ unique_id }} .swiper-slide-active {
+    opacity: 1;
+    z-index: 2;
+  }
+  
+  /* Skalierung des Inhalts (Link) des aktiven Slides */
+  .swiper-container-{{ unique_id }} .swiper-slide-active .slide-content-link {
+    transform: scale(1.0);
+    opacity: 1;
+  }
+
+  /* Inhalt Wrapper (Link) */
+  .swiper-container-{{ unique_id }} .slide-content-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 100%;
+    border-radius: {{ settings.border_radius }}px;
+    overflow: hidden;
+  }
+
+  /* Bild Styling */
+  .swiper-container-{{ unique_id }} .slide-image {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Caption Styling */
+  .swiper-container-{{ unique_id }} .slide-caption {
+    text-align: center;
+    padding: 15px 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    background: {{ settings.caption_bg_color }};
+    color: {{ settings.caption_text_color }};
+    font-family: {{ settings.caption_font_family }};
+  }
+</style>
+
+{% comment %} 
+  Bestimme die Quelle der Slides: 
+  - Wenn content_source = 'product' und ein Produkt ausgewählt wurde, nutze Produktbilder
+  - Ansonsten nutze die custom blocks
+{% endcomment %}
+{% assign use_product_images = false %}
+{% assign selected_product = null %}
+
+{% if settings.content_source == 'product' and settings.product != blank %}
+  {% assign use_product_images = true %}
+  {% assign selected_product = all_products[settings.product] %}
+{% endif %}
+
+<div class="swiper-gallery-wrapper-{{ unique_id }}">
+  <div class="swiper swiper-container-{{ unique_id }}">
+    <div class="swiper-wrapper">
+      
+      {% if use_product_images and selected_product %}
+        {% comment %} Produktbilder anzeigen {% endcomment %}
+        {% for image in selected_product.images %}
+          <div class="swiper-slide">
+            {% if settings.link_to_product %}
+              <a href="{{ selected_product.url }}" class="slide-content-link">
+            {% else %}
+              <div class="slide-content-link">
+            {% endif %}
+              
+              {{ image | image_url: width: 800 | image_tag: 
+                loading: 'lazy', 
+                class: 'slide-image', 
+                alt: image.alt | default: selected_product.title 
+              }}
+
+              {% if settings.show_product_title %}
+                <div class="slide-caption">
+                  {{ selected_product.title }}
+                  {% if settings.show_image_alt and image.alt != blank %}
+                    - {{ image.alt }}
+                  {% endif %}
+                </div>
+              {% elsif settings.show_image_alt and image.alt != blank %}
+                <div class="slide-caption">
+                  {{ image.alt }}
+                </div>
+              {% endif %}
+
+            {% if settings.link_to_product %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        
+      {% else %}
+        {% comment %} Custom Slides anzeigen {% endcomment %}
+        {% for block in blocks %}
+          <div class="swiper-slide" {{ block.shopify_attributes }}>
+            {% if block.settings.link != blank %}
+              <a href="{{ block.settings.link }}" class="slide-content-link">
+            {% else %}
+              <div class="slide-content-link">
+            {% endif %}
+              
+              {% if block.settings.image != blank %}
+                {{ block.settings.image | image_url: width: 800 | image_tag: 
+                  loading: 'lazy', 
+                  class: 'slide-image', 
+                  alt: block.settings.caption 
+                }}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'slide-image' }}
+              {% endif %}
+
+              {% if block.settings.caption != blank %}
+                <div class="slide-caption">
+                  {{ block.settings.caption }}
+                </div>
+              {% endif %}
+
+            {% if block.settings.link != blank %}
+              </a>
+            {% else %}
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+        
+      {% endif %}
+      
+    </div>
+    
+    {% if settings.pagination %}
+      <div class="swiper-pagination"></div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const swiper{{ unique_id | replace: '-', '_' }} = new Swiper('.swiper-container-{{ unique_id }}', {
+      effect: 'slide',
+      grabCursor: true,
+      centeredSlides: true,
+      slidesPerView: 'auto',
+      spaceBetween: 20,
+      loop: false,
+      speed: 600,
+      
+      pagination: {
+        el: '.swiper-container-{{ unique_id }} .swiper-pagination',
+        clickable: true,
+      },
+      
+      // Accessibility
+      a11y: {
+        prevSlideMessage: 'Previous slide',
+        nextSlideMessage: 'Next slide',
+      },
+    });
+  });
+</script>
