@@ -1,0 +1,501 @@
+{% comment %}
+  Expandable Product Card Section
+  Mobile-optimized product card with swipeable/clickable details
+{% endcomment %}
+
+<style>
+  .product-card-expandable {
+    max-width: 400px;
+    margin: 0 auto;
+    background: #fff;
+    position: relative;
+  }
+
+  .product-card-expandable__image {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .product-card-expandable__toggle-bar {
+    width: 50px;
+    height: 2px;
+    background: #000;
+    cursor: pointer;
+    position: relative;
+    margin: 10px auto 0;
+    padding: 0;
+    border: none;
+  }
+
+  .product-card-expandable__content {
+    padding: 20px;
+    background: #fff;
+  }
+
+  .product-card-expandable__title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+    margin: 0 0 12px 0;
+    color: #000;
+  }
+
+  .product-card-expandable__price {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0 0 16px 0;
+    color: #000;
+  }
+
+  .product-card-expandable__button {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .product-card-expandable__button:hover {
+    background: #333;
+  }
+
+  /* Expanded overlay - fullscreen menu */
+  .product-card-expandable__overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #fff;
+    z-index: 9999;
+    transform: translateY(100%);
+    transition: transform 0.4s ease-out;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .product-card-expandable.is-expanded .product-card-expandable__overlay {
+    transform: translateY(0);
+  }
+
+  .product-card-expandable__overlay-header {
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
+  }
+
+  .product-card-expandable__close-bar {
+    width: 50px;
+    height: 2px;
+    background: #000;
+    cursor: pointer;
+    border: none;
+    padding: 0;
+    margin: 10px auto 0;
+  }
+
+  .product-card-expandable__overlay-content {
+    padding: 20px;
+  }
+
+  .product-card-expandable__overlay-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+    margin: 0 0 12px 0;
+    color: #000;
+  }
+
+  .product-card-expandable__overlay-price {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    margin: 0 0 16px 0;
+    color: #000;
+  }
+
+  .product-card-expandable__overlay-button {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    margin-bottom: 24px;
+  }
+
+  .product-card-expandable__overlay-button:hover {
+    background: #333;
+  }
+
+  .product-card-expandable__description {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #333;
+    margin: 0 0 24px 0;
+  }
+
+  .product-card-expandable__meta {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .product-card-expandable__meta-item {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #333;
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+  }
+
+  .product-card-expandable__meta-label {
+    font-weight: 500;
+  }
+
+  /* Block styles */
+  .product-card-expandable__block {
+    margin-bottom: 20px;
+  }
+
+  .product-card-expandable__block:last-child {
+    margin-bottom: 0;
+  }
+
+  .product-card-expandable__block--text h3 {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 0 0 8px 0;
+    color: #000;
+  }
+
+  .product-card-expandable__block--text p {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    color: #333;
+  }
+
+  .product-card-expandable__block--button button {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 16px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .product-card-expandable__block--button button:hover {
+    background: #333;
+  }
+
+  .product-card-expandable__block--meta {
+    border-top: 1px solid #eee;
+    padding-top: 12px;
+  }
+
+  .product-card-expandable__block--meta-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #333;
+  }
+
+  .product-card-expandable__block--meta-label {
+    font-weight: 500;
+  }
+
+  /* Touch-friendly */
+  @media (max-width: 768px) {
+    .product-card-expandable__toggle-bar,
+    .product-card-expandable__close-bar {
+      touch-action: pan-y;
+    }
+  }
+
+  /* Prevent body scroll when overlay is open */
+  body.product-overlay-open {
+    overflow: hidden;
+  }
+</style>
+
+<div class="product-card-expandable" id="product-card-{{ section.id }}">
+  {% if section.settings.product_image %}
+    <img 
+      src="{{ section.settings.product_image | image_url: '800x' }}" 
+      alt="{{ section.settings.product_title }}"
+      width="800"
+      height="800"
+      class="product-card-expandable__image"
+      loading="lazy"
+    >
+  {% endif %}
+
+  <div class="product-card-expandable__toggle-bar" 
+       role="button" 
+       tabindex="0"
+       aria-label="Produktdetails anzeigen"
+       aria-expanded="false">
+  </div>
+
+  <div class="product-card-expandable__content">
+    {% content_for 'block', type: 'group', id: 'minimized' %}
+  </div>
+
+  <!-- Fullscreen Overlay -->
+  <div class="product-card-expandable__overlay">
+    <div class="product-card-expandable__overlay-header">
+      <div class="product-card-expandable__close-bar" 
+           role="button" 
+           tabindex="0"
+           aria-label="Produktdetails schließen">
+      </div>
+    </div>
+
+    <div class="product-card-expandable__overlay-content">
+      {% content_for 'block', type: 'group', id: 'maximized' %}
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const productCard = document.getElementById('product-card-{{ section.id }}');
+    const toggleBar = productCard.querySelector('.product-card-expandable__toggle-bar');
+    const closeBar = productCard.querySelector('.product-card-expandable__close-bar');
+    const overlay = productCard.querySelector('.product-card-expandable__overlay');
+    const cardContent = productCard.querySelector('.product-card-expandable__content');
+    
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    function openOverlay() {
+      productCard.classList.add('is-expanded');
+      toggleBar.setAttribute('aria-expanded', 'true');
+      document.body.classList.add('product-overlay-open');
+    }
+    
+    function closeOverlay() {
+      productCard.classList.remove('is-expanded');
+      toggleBar.setAttribute('aria-expanded', 'false');
+      document.body.classList.remove('product-overlay-open');
+    }
+    
+    // Click/Tap on toggle bar to open
+    toggleBar.addEventListener('click', openOverlay);
+    
+    // Keyboard support for toggle bar
+    toggleBar.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openOverlay();
+      }
+    });
+    
+    // Click/Tap on close bar to close
+    closeBar.addEventListener('click', closeOverlay);
+    
+    // Keyboard support for close bar
+    closeBar.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        closeOverlay();
+      }
+    });
+    
+    // Swipe Detection on entire product card
+    productCard.addEventListener('touchstart', function(e) {
+      // Only detect on card, not in overlay
+      if (!productCard.classList.contains('is-expanded')) {
+        touchStartY = e.changedTouches[0].screenY;
+      }
+    }, { passive: true });
+    
+    productCard.addEventListener('touchend', function(e) {
+      // Only detect on card, not in overlay
+      if (!productCard.classList.contains('is-expanded')) {
+        touchEndY = e.changedTouches[0].screenY;
+        const diff = touchStartY - touchEndY;
+        const swipeThreshold = 30;
+        
+        // Swipe up to open
+        if (diff > swipeThreshold) {
+          openOverlay();
+        }
+      }
+    }, { passive: true });
+    
+    // Swipe Detection on close bar
+    closeBar.addEventListener('touchstart', function(e) {
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+    
+    closeBar.addEventListener('touchend', function(e) {
+      touchEndY = e.changedTouches[0].screenY;
+      const diff = touchStartY - touchEndY;
+      const swipeThreshold = 30;
+      
+      // Swipe down to close
+      if (diff < -swipeThreshold) {
+        closeOverlay();
+      }
+    }, { passive: true });
+
+    // Swipe Detection on entire overlay (only when scrolled to top)
+    overlay.addEventListener('touchstart', function(e) {
+      if (productCard.classList.contains('is-expanded')) {
+        touchStartY = e.changedTouches[0].screenY;
+      }
+    }, { passive: true });
+    
+    overlay.addEventListener('touchend', function(e) {
+      if (productCard.classList.contains('is-expanded')) {
+        // Check if overlay is scrolled to the top
+        const isAtTop = overlay.scrollTop === 0;
+        
+        if (isAtTop) {
+          touchEndY = e.changedTouches[0].screenY;
+          const diff = touchStartY - touchEndY;
+          const swipeThreshold = 30;
+          
+          // Swipe down to close
+          if (diff < -swipeThreshold) {
+            closeOverlay();
+          }
+        }
+      }
+    }, { passive: true });
+
+    // Add to cart button functionality - both buttons
+    const addToCartButtons = productCard.querySelectorAll('.product-card-expandable__button, .product-card-expandable__overlay-button');
+    addToCartButtons.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        // Add your cart logic here
+        console.log('Produkt zum Warenkorb hinzugefügt');
+      });
+    });
+    
+    // Close overlay when clicking outside content (optional)
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) {
+        closeOverlay();
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Erweit. Produktkarte",
+  "tag": "section",
+  "class": "section-product-card-expandable",
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    {
+      "type": "icon"
+    },
+    {
+      "type": "image"
+    },
+    {
+      "type": "video"
+    },
+    {
+      "type": "group"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "accordion"
+    },
+    {
+      "type": "product-recommendations"
+    },
+    {
+      "type": "variant-picker"
+    },
+    {
+      "type": "buy-buttons"
+    },
+    {
+      "type": "product-description"
+    },
+    {
+      "type": "review"
+    },
+    {
+      "type": "accelerated-checkout"
+    },
+    {
+      "type": "_divider"
+    },
+    {
+      "type": "product-inventory"
+    },
+    {
+      "type": "product-custom-property"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Erweit. Produktkarte",
+      "category": "custom",
+      "blocks": [
+        {
+          "type": "group",
+          "name": "minimized",
+          "static": true,
+          "id": "minimized"
+        },
+        {
+          "type": "group",
+          "name": "maximized",
+          "static": true,
+          "id": "maximized"
+          
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}
