@@ -31,6 +31,11 @@
   .product-card-expandable__content {
     padding: 20px;
     background: #fff;
+    touch-action: pan-y;
+  }
+
+  .product-card-expandable:not(.is-expanded) {
+    touch-action: pan-y;
   }
 
   .product-card-expandable__title {
@@ -78,13 +83,16 @@
     bottom: 0;
     background: #fff;
     z-index: 9999;
+    -webkit-transform: translateY(100%);
     transform: translateY(100%);
+    -webkit-transition: -webkit-transform 0.4s ease-out;
     transition: transform 0.4s ease-out;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   .product-card-expandable.is-expanded .product-card-expandable__overlay {
+    -webkit-transform: translateY(0);
     transform: translateY(0);
   }
 
@@ -338,12 +346,30 @@
     });
     
     // Swipe Detection on entire product card
+    let touchMoved = false;
+    let swipeStartY = 0;
+    
     productCard.addEventListener('touchstart', function(e) {
       // Only detect on card, not in overlay
       if (!productCard.classList.contains('is-expanded')) {
         touchStartY = e.changedTouches[0].screenY;
+        swipeStartY = e.changedTouches[0].screenY;
+        touchMoved = false;
       }
-    }, { passive: true });
+    }, { passive: false });
+    
+    productCard.addEventListener('touchmove', function(e) {
+      if (!productCard.classList.contains('is-expanded') && swipeStartY) {
+        const currentY = e.changedTouches[0].screenY;
+        const diff = swipeStartY - currentY;
+        
+        // If swiping up, prevent default scroll behavior immediately
+        if (diff > 0) {
+          touchMoved = true;
+          e.preventDefault();
+        }
+      }
+    }, { passive: false });
     
     productCard.addEventListener('touchend', function(e) {
       // Only detect on card, not in overlay
@@ -353,11 +379,14 @@
         const swipeThreshold = 30;
         
         // Swipe up to open
-        if (diff > swipeThreshold) {
+        if (diff > swipeThreshold && touchMoved) {
+          e.preventDefault();
           openOverlay();
         }
+        touchMoved = false;
+        swipeStartY = 0;
       }
-    }, { passive: true });
+    }, { passive: false });
     
     // Swipe Detection on close bar
     closeBar.addEventListener('touchstart', function(e) {
